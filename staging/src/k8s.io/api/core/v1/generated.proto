@@ -2735,6 +2735,10 @@ message PersistentVolumeClaimSpec {
   // (Beta) Using this field requires the AnyVolumeDataSource feature gate to be enabled.
   // +optional
   optional TypedLocalObjectReference dataSourceRef = 8;
+
+  // (Alpha) Using this field requires the CrossNamespaceSnapshots feature gate to be enabled.
+  // +optional
+  optional TypedCrossNamespaceObjectReference dataSourceRef2 = 9;
 }
 
 // PersistentVolumeClaimStatus is the current status of a persistent volume claim.
@@ -5524,6 +5528,25 @@ message TopologySpreadConstraint {
   // +listType=atomic
   // +optional
   repeated string matchLabelKeys = 8;
+}
+
+message TypedCrossNamespaceObjectReference {
+  // APIGroup is the group for the resource being referenced.
+  // If APIGroup is not specified, the specified Kind must be in the core API group.
+  // For any other third-party types, APIGroup is required.
+  // +optional
+  optional string apiGroup = 1;
+
+  // Kind is the type of resource being referenced
+  optional string kind = 2;
+
+  // Name is the name of resource being referenced
+  optional string name = 3;
+
+  // Namespace is the namespace of resource being referenced
+  // Note that when a namespace is specified, a ReferenceGrant object is required in the referent namespace to allow that namespace's owner to accept the reference. See the ReferenceGrant documentation for details.
+  // +optional
+  optional string namespace = 4;
 }
 
 // TypedLocalObjectReference contains enough information to let you locate the

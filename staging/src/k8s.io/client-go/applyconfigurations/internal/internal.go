@@ -5386,6 +5386,9 @@ var schemaYAML = typed.YAMLObject(`types:
     - name: dataSourceRef
       type:
         namedType: io.k8s.api.core.v1.TypedLocalObjectReference
+    - name: dataSourceRef2
+      type:
+        namedType: io.k8s.api.core.v1.TypedCrossNamespaceObjectReference
     - name: resources
       type:
         namedType: io.k8s.api.core.v1.ResourceRequirements
@@ -6941,6 +6944,24 @@ var schemaYAML = typed.YAMLObject(`types:
         scalar: string
       default: ""
     - name: whenUnsatisfiable
+      type:
+        scalar: string
+      default: ""
+- name: io.k8s.api.core.v1.TypedCrossNamespaceObjectReference
+  map:
+    fields:
+    - name: apiGroup
+      type:
+        scalar: string
+    - name: kind
+      type:
+        scalar: string
+      default: ""
+    - name: name
+      type:
+        scalar: string
+      default: ""
+    - name: namespace
       type:
         scalar: string
       default: ""

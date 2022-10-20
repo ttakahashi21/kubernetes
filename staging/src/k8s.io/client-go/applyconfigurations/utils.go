@@ -839,6 +839,8 @@ func ForKind(kind schema.GroupVersionKind) interface{} {
 		return &applyconfigurationscorev1.TopologySelectorTermApplyConfiguration{}
 	case corev1.SchemeGroupVersion.WithKind("TopologySpreadConstraint"):
 		return &applyconfigurationscorev1.TopologySpreadConstraintApplyConfiguration{}
+	case corev1.SchemeGroupVersion.WithKind("TypedCrossNamespaceObjectReference"):
+		return &applyconfigurationscorev1.TypedCrossNamespaceObjectReferenceApplyConfiguration{}
 	case corev1.SchemeGroupVersion.WithKind("TypedLocalObjectReference"):
 		return &applyconfigurationscorev1.TypedLocalObjectReferenceApplyConfiguration{}
 	case corev1.SchemeGroupVersion.WithKind("Volume"):

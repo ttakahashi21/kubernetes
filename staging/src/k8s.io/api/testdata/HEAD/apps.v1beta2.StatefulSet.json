@@ -467,6 +467,12 @@
                     "apiGroup": "apiGroupValue",
                     "kind": "kindValue",
                     "name": "nameValue"
+                  },
+                  "dataSourceRef2": {
+                    "apiGroup": "apiGroupValue",
+                    "kind": "kindValue",
+                    "name": "nameValue",
+                    "namespace": "namespaceValue"
                   }
                 }
               }
@@ -1712,6 +1718,12 @@
             "apiGroup": "apiGroupValue",
             "kind": "kindValue",
             "name": "nameValue"
+          },
+          "dataSourceRef2": {
+            "apiGroup": "apiGroupValue",
+            "kind": "kindValue",
+            "name": "nameValue",
+            "namespace": "namespaceValue"
           }
         },
         "status": {

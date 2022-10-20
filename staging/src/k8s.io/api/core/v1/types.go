@@ -520,6 +520,25 @@ type PersistentVolumeClaimSpec struct {
 	// (Beta) Using this field requires the AnyVolumeDataSource feature gate to be enabled.
 	// +optional
 	DataSourceRef *TypedLocalObjectReference `json:"dataSourceRef,omitempty" protobuf:"bytes,8,opt,name=dataSourceRef"`
+	// (Alpha) Using this field requires the CrossNamespaceSnapshots feature gate to be enabled.
+	// +optional
+	DataSourceRef2 *TypedCrossNamespaceObjectReference `json:"dataSourceRef2,omitempty" protobuf:"bytes,9,opt,name=dataSourceRef2"`
+}
+
+type TypedCrossNamespaceObjectReference struct {
+	// APIGroup is the group for the resource being referenced.
+	// If APIGroup is not specified, the specified Kind must be in the core API group.
+	// For any other third-party types, APIGroup is required.
+	// +optional
+	APIGroup *string `json:"apiGroup" protobuf:"bytes,1,opt,name=apiGroup"`
+	// Kind is the type of resource being referenced
+	Kind string `json:"kind" protobuf:"bytes,2,opt,name=kind"`
+	// Name is the name of resource being referenced
+	Name string `json:"name" protobuf:"bytes,3,opt,name=name"`
+	// Namespace is the namespace of resource being referenced
+	// Note that when a namespace is specified, a ReferenceGrant object is required in the referent namespace to allow that namespace's owner to accept the reference. See the ReferenceGrant documentation for details.
+	// +optional
+	Namespace string `json:"namespace" protobuf:"bytes,4,opt,name=namespace"`
 }
 
 // PersistentVolumeClaimConditionType is a valid value of PersistentVolumeClaimCondition.Type

@@ -2092,6 +2092,30 @@ func validateDataSource(dataSource *core.TypedLocalObjectReference, fldPath *fie
 	return allErrs
 }
 
+// validateDataSource2 validates a DataSourceRef2 in a PersistentVolumeClaimSpec
+func validateDataSource2(dataSource2 *core.TypedCrossNamespaceObjectReference, fldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	if len(dataSource2.Name) == 0 {
+		allErrs = append(allErrs, field.Required(fldPath.Child("name"), "CrossNamespaceSourceProvisioning Name cannot be empty"))
+	}
+	if len(dataSource2.Kind) == 0 {
+		allErrs = append(allErrs, field.Required(fldPath.Child("kind"), "CrossNamespaceSourceProvisioning kind cannot be empty"))
+	}
+	if dataSource2.Kind != "VolumeSnapshot" {
+		allErrs = append(allErrs, field.Invalid(fldPath, dataSource2.Kind, "expected DataSourceRef2 Kind is VolumeSnapshot"))
+	}
+	if dataSource2.APIGroup == nil || *dataSource2.APIGroup != "snapshot.storage.k8s.io" {
+		allErrs = append(allErrs, field.Invalid(fldPath.Child("apiGroup"), dataSource2.APIGroup, "expected DataSourceRef2 APIGroup is snapshot.storage.k8s.io"))
+	}
+	if len(dataSource2.Namespace) > 0 {
+		for _, msg := range ValidateNameFunc(ValidateNamespaceName)(dataSource2.Namespace, false) {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("namespace"), dataSource2.Namespace, msg))
+		}
+	}
+	return allErrs
+}
+
 // ValidatePersistentVolumeClaimSpec validates a PersistentVolumeClaimSpec
 func ValidatePersistentVolumeClaimSpec(spec *core.PersistentVolumeClaimSpec, fldPath *field.Path, opts PersistentVolumeClaimSpecValidationOptions) field.ErrorList {
 	allErrs := field.ErrorList{}
@@ -2151,6 +2175,18 @@ func ValidatePersistentVolumeClaimSpec(spec *core.PersistentVolumeClaimSpec, fld
 		if !apiequality.Semantic.DeepEqual(spec.DataSource, spec.DataSourceRef) {
 			allErrs = append(allErrs, field.Invalid(fldPath, fldPath.Child("dataSource"),
 				"must match dataSourceRef"))
+		}
+	}
+
+	if spec.DataSourceRef2 != nil {
+		if !utilfeature.DefaultFeatureGate.Enabled(features.CrossNamespaceSourceProvisioning) {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("dataSourceRef2"), "CrossNamespaceSourceProvisioning is disabled by feature-gate"))
+			spec.DataSourceRef2 = nil
+		} else {
+			allErrs = append(allErrs, validateDataSource2(spec.DataSourceRef2, fldPath.Child("dataSourceRef2"))...)
+		}
+		if spec.DataSource != nil {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("dataSourceRef2"), "dataSourceRef2 reject. Because DataSource and DataSourceRef2 are both set."))
 		}
 	}
 

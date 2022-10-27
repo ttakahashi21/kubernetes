@@ -220,6 +220,52 @@ func TestAnyDataSourceFilter(t *testing.T) {
 	}
 }
 
+// TestCrossNamespaceVolumeDataSourceFilter checks to ensure the CrossNamespaceVolumeDataSource feature gate works
+func TestCrossNamespaceVolumeDataSourceFilter(t *testing.T) {
+	makeDataSource := func(apiGroup, kind, namespace, name string) *core.TypedCrossNamespaceObjectReference {
+		return &core.TypedCrossNamespaceObjectReference{
+			APIGroup:  &apiGroup,
+			Kind:      kind,
+			Namespace: namespace,
+			Name:      name,
+		}
+	}
+	volumeDataSource := makeDataSource("snapshot.storage.k8s.io", "VolumeSnapshot", "test_namespace", "test_snapshot")
+
+	var tests = map[string]struct {
+		spec                                 core.PersistentVolumeClaimSpec
+		enableCrossNamespaceVolumeDataSource bool
+		wantRef                              *core.TypedCrossNamespaceObjectReference
+	}{
+		"any disabled with empty ds ref2": {
+			spec: core.PersistentVolumeClaimSpec{},
+		},
+		"any disabled with volume ds ref2": {
+			spec: core.PersistentVolumeClaimSpec{DataSourceRef2: volumeDataSource},
+		},
+		"any enabled with empty ds ref2": {
+			spec:                                 core.PersistentVolumeClaimSpec{},
+			enableCrossNamespaceVolumeDataSource: true,
+		},
+		"any enabled with volume ds ref2": {
+			spec:                                 core.PersistentVolumeClaimSpec{DataSourceRef2: volumeDataSource},
+			enableCrossNamespaceVolumeDataSource: true,
+			wantRef:                              volumeDataSource,
+		},
+	}
+
+	for testName, test := range tests {
+		t.Run(testName, func(t *testing.T) {
+			defer featuregatetesting.SetFeatureGateDuringTest(t, utilfeature.DefaultFeatureGate, features.CrossNamespaceVolumeDataSource, test.enableCrossNamespaceVolumeDataSource)()
+			DropDisabledFields(&test.spec)
+			if test.spec.DataSourceRef2 != test.wantRef {
+				t.Errorf("expected condition was not met, test: %s, anyEnabled: %v, spec: %v, expected: %v",
+					testName, test.enableCrossNamespaceVolumeDataSource, test.spec, test.wantRef)
+			}
+		})
+	}
+}
+
 // TestDataSourceRef checks to ensure the DataSourceRef field handles backwards
 // compatibility with the DataSource field
 func TestDataSourceRef(t *testing.T) {

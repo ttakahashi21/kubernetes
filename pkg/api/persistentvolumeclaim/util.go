@@ -38,6 +38,12 @@ func DropDisabledFields(pvcSpec *core.PersistentVolumeClaimSpec) {
 	if !utilfeature.DefaultFeatureGate.Enabled(features.AnyVolumeDataSource) {
 		pvcSpec.DataSourceRef = nil
 	}
+
+	// Drop the contents of the dataSourceRef field if the CrossNamespaceVolumeDataSource
+	// feature gate is disabled.
+	if !utilfeature.DefaultFeatureGate.Enabled(features.CrossNamespaceVolumeDataSource) {
+		pvcSpec.DataSourceRef2 = nil
+	}
 }
 
 // EnforceDataSourceBackwardsCompatibility drops the data source field under certain conditions

@@ -19686,12 +19686,6 @@ func TestCrossNamespaceSource(t *testing.T) {
 		claimSpec                            *core.PersistentVolumeClaimSpec
 	}{
 		{
-			testName:                             "Feature gate disabled",
-			expectedFail:                         true,
-			enableCrossNamespaceVolumeDataSource: false,
-			claimSpec:                            pvcSpecWithCrossNamespaceSource(&snapAPIGroup, snapKind, goodNS, goodName, false),
-		},
-		{
 			testName:                             "Feature gate enabled and valid DataSourceRef2 specified",
 			expectedFail:                         false,
 			enableCrossNamespaceVolumeDataSource: true,

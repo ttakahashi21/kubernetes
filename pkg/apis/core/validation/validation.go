@@ -2179,7 +2179,7 @@ func ValidatePersistentVolumeClaimSpec(spec *core.PersistentVolumeClaimSpec, fld
 	}
 
 	if spec.DataSourceRef2 != nil {
-		if !utilfeature.DefaultFeatureGate.Enabled(features.CrossNamespaceSourceProvisioning) {
+		if !utilfeature.DefaultFeatureGate.Enabled(features.CrossNamespaceVolumeDataSource) {
 			allErrs = append(allErrs, field.Forbidden(fldPath.Child("dataSourceRef2"), "CrossNamespaceSourceProvisioning is disabled by feature-gate"))
 			spec.DataSourceRef2 = nil
 		} else {

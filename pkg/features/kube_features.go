@@ -41,7 +41,7 @@ const (
 	// alpha: v1.26
 	//
 	// Enable usage of Provision of PVCs from PVCs in other namespaces
-	CrossNamespaceSourceProvisioning featuregate.Feature = "CrossNamespaceSourceProvisioning"
+	CrossNamespaceVolumeDataSource featuregate.Feature = "CrossNamespaceVolumeDataSource"
 
 	// owner: @bswartz
 	// alpha: v1.18
@@ -820,7 +820,7 @@ func init() {
 // Entries are separated from each other with blank lines to avoid sweeping gofmt changes
 // when adding or removing one entry.
 var defaultKubernetesFeatureGates = map[featuregate.Feature]featuregate.FeatureSpec{
-	CrossNamespaceSourceProvisioning: {Default: false, PreRelease: featuregate.Alpha},
+	CrossNamespaceVolumeDataSource: {Default: false, PreRelease: featuregate.Alpha},
 
 	AnyVolumeDataSource: {Default: true, PreRelease: featuregate.Beta}, // on by default in 1.24
 

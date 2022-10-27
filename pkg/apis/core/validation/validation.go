@@ -2097,16 +2097,16 @@ func validateDataSource2(dataSource2 *core.TypedCrossNamespaceObjectReference, f
 	allErrs := field.ErrorList{}
 
 	if len(dataSource2.Name) == 0 {
-		allErrs = append(allErrs, field.Required(fldPath.Child("name"), "CrossNamespaceSourceProvisioning Name cannot be empty"))
+		allErrs = append(allErrs, field.Required(fldPath.Child("name"), ""))
 	}
 	if len(dataSource2.Kind) == 0 {
-		allErrs = append(allErrs, field.Required(fldPath.Child("kind"), "CrossNamespaceSourceProvisioning kind cannot be empty"))
+		allErrs = append(allErrs, field.Required(fldPath.Child("kind"), ""))
 	}
 	if dataSource2.Kind != "VolumeSnapshot" {
-		allErrs = append(allErrs, field.Invalid(fldPath, dataSource2.Kind, "expected DataSourceRef2 Kind is VolumeSnapshot"))
+		allErrs = append(allErrs, field.Invalid(fldPath, dataSource2.Kind, "expected value is VolumeSnapshot"))
 	}
 	if dataSource2.APIGroup == nil || *dataSource2.APIGroup != "snapshot.storage.k8s.io" {
-		allErrs = append(allErrs, field.Invalid(fldPath.Child("apiGroup"), dataSource2.APIGroup, "expected DataSourceRef2 APIGroup is snapshot.storage.k8s.io"))
+		allErrs = append(allErrs, field.Invalid(fldPath.Child("apiGroup"), dataSource2.APIGroup, "expected value is snapshot.storage.k8s.io"))
 	}
 	if len(dataSource2.Namespace) > 0 {
 		for _, msg := range ValidateNameFunc(ValidateNamespaceName)(dataSource2.Namespace, false) {
@@ -2186,7 +2186,7 @@ func ValidatePersistentVolumeClaimSpec(spec *core.PersistentVolumeClaimSpec, fld
 			allErrs = append(allErrs, validateDataSource2(spec.DataSourceRef2, fldPath.Child("dataSourceRef2"))...)
 		}
 		if spec.DataSource != nil {
-			allErrs = append(allErrs, field.Forbidden(fldPath.Child("dataSourceRef2"), "dataSourceRef2 reject. Because DataSource and DataSourceRef2 are both set."))
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("dataSourceRef2"), spec.DataSourceRef2, "only one of dataSource and dataSourceRef2 can be set"))
 		}
 	}
 

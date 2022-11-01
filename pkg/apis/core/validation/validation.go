@@ -2092,6 +2092,39 @@ func validateDataSource(dataSource *core.TypedLocalObjectReference, fldPath *fie
 	return allErrs
 }
 
+// validateDataSourceRef validates a DataSourceRef in a PersistentVolumeClaimSpec
+func validateDataSourceRef(dataSourceRef *core.TypedObjectReference, fldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	if len(dataSourceRef.Name) == 0 {
+		allErrs = append(allErrs, field.Required(fldPath.Child("name"), ""))
+	}
+	if len(dataSourceRef.Kind) == 0 {
+		allErrs = append(allErrs, field.Required(fldPath.Child("kind"), ""))
+	}
+	apiGroup := ""
+	if dataSourceRef.APIGroup != nil {
+		apiGroup = *dataSourceRef.APIGroup
+	}
+	if len(apiGroup) == 0 && dataSourceRef.Kind != "PersistentVolumeClaim" {
+		allErrs = append(allErrs, field.Invalid(fldPath, dataSourceRef.Kind, ""))
+	}
+
+	if len(dataSourceRef.Namespace) > 0 {
+		if dataSourceRef.Kind != "VolumeSnapshot" {
+			allErrs = append(allErrs, field.Invalid(fldPath, dataSourceRef.Kind, "expected value is VolumeSnapshot"))
+		}
+		if dataSourceRef.APIGroup == nil || *dataSourceRef.APIGroup != "snapshot.storage.k8s.io" {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("apiGroup"), dataSourceRef.APIGroup, "expected value is snapshot.storage.k8s.io"))
+		}
+		for _, msg := range ValidateNameFunc(ValidateNamespaceName)(dataSourceRef.Namespace, false) {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("namespace"), dataSourceRef.Namespace, msg))
+		}
+	}
+
+	return allErrs
+}
+
 // ValidatePersistentVolumeClaimSpec validates a PersistentVolumeClaimSpec
 func ValidatePersistentVolumeClaimSpec(spec *core.PersistentVolumeClaimSpec, fldPath *field.Path, opts PersistentVolumeClaimSpecValidationOptions) field.ErrorList {
 	allErrs := field.ErrorList{}
@@ -2145,16 +2178,34 @@ func ValidatePersistentVolumeClaimSpec(spec *core.PersistentVolumeClaimSpec, fld
 		allErrs = append(allErrs, validateDataSource(spec.DataSource, fldPath.Child("dataSource"))...)
 	}
 	if spec.DataSourceRef != nil {
-		allErrs = append(allErrs, validateDataSource(spec.DataSourceRef, fldPath.Child("dataSourceRef"))...)
+		allErrs = append(allErrs, validateDataSourceRef(spec.DataSourceRef, fldPath.Child("dataSourceRef"))...)
 	}
-	if spec.DataSource != nil && spec.DataSourceRef != nil {
-		if !apiequality.Semantic.DeepEqual(spec.DataSource, spec.DataSourceRef) {
+	if spec.DataSourceRef != nil && len(spec.DataSourceRef.Namespace) > 0 {
+		if spec.DataSource != nil {
+			allErrs = append(allErrs, field.Invalid(fldPath, fldPath.Child("dataSource"),
+				"can not specify datasource when dataSourceRef with non-empty namespace is specified"))
+		}
+	} else if spec.DataSource != nil && spec.DataSourceRef != nil {
+		if !isDataSourceEqualDataSourceRef(spec.DataSource, spec.DataSourceRef) {
 			allErrs = append(allErrs, field.Invalid(fldPath, fldPath.Child("dataSource"),
 				"must match dataSourceRef"))
 		}
 	}
 
 	return allErrs
+}
+
+func isDataSourceEqualDataSourceRef(dataSource *core.TypedLocalObjectReference, dataSourceRef *core.TypedObjectReference) bool {
+	if dataSource == nil && dataSourceRef == nil {
+		return true
+	}
+	if dataSource == nil || dataSourceRef == nil {
+		return false
+	}
+	if len(dataSourceRef.Namespace) > 0 {
+		return false
+	}
+	return dataSource.APIGroup == dataSourceRef.APIGroup && dataSource.Kind == dataSourceRef.Kind && dataSource.Name == dataSourceRef.Name
 }
 
 // ValidatePersistentVolumeClaimUpdate validates an update to a PersistentVolumeClaim

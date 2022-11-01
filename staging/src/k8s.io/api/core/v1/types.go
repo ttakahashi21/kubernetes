@@ -497,29 +497,52 @@ type PersistentVolumeClaimSpec struct {
 	// * An existing PVC (PersistentVolumeClaim)
 	// If the provisioner or an external controller can support the specified data source,
 	// it will create a new volume based on the contents of the specified data source.
-	// If the AnyVolumeDataSource feature gate is enabled, this field will always have
-	// the same contents as the DataSourceRef field.
+	// If the AnyVolumeDataSource feature gate is enabled, all the fields in this field will have the same values
+	// as those in the DataSourceRef field when namespace isn't specified in DataSourceRef.
+	// When namespace is specified in DataSourceRef, DataSource must be empty.
 	// +optional
 	DataSource *TypedLocalObjectReference `json:"dataSource,omitempty" protobuf:"bytes,7,opt,name=dataSource"`
 	// dataSourceRef specifies the object from which to populate the volume with data, if a non-empty
-	// volume is desired. This may be any local object from a non-empty API group (non
+	// volume is desired. This may be any object from a non-empty API group (non
 	// core object) or a PersistentVolumeClaim object.
 	// When this field is specified, volume binding will only succeed if the type of
 	// the specified object matches some installed volume populator or dynamic
 	// provisioner.
 	// This field will replace the functionality of the DataSource field and as such
 	// if both fields are non-empty, they must have the same value. For backwards
-	// compatibility, both fields (DataSource and DataSourceRef) will be set to the same
+	// compatibility, when namespace isn't specified in DataSourceRef,
+	// both fields (DataSource and DataSourceRef) will be set to the same
 	// value automatically if one of them is empty and the other is non-empty.
-	// There are two important differences between DataSource and DataSourceRef:
+	// When namespace is specified in DataSourceRef,
+	// DataSource isn't set to the same value and must be empty.
+	// There are three important differences between DataSource and DataSourceRef:
 	// * While DataSource only allows two specific types of objects, DataSourceRef
 	//   allows any non-core object, as well as PersistentVolumeClaim objects.
 	// * While DataSource ignores disallowed values (dropping them), DataSourceRef
 	//   preserves all values, and generates an error if a disallowed value is
 	//   specified.
+	// * While DataSource only allows local objects, DataSourceRef allows objects
+	//   in any namespaces.
 	// (Beta) Using this field requires the AnyVolumeDataSource feature gate to be enabled.
+	// (Alpha) Using the namespace field of DataSourceRef requires the CrossNamespaceVolumeDataSource feature gate to be enabled.
 	// +optional
-	DataSourceRef *TypedLocalObjectReference `json:"dataSourceRef,omitempty" protobuf:"bytes,8,opt,name=dataSourceRef"`
+	DataSourceRef *TypedObjectReference `json:"dataSourceRef,omitempty" protobuf:"bytes,8,opt,name=dataSourceRef"`
+}
+
+type TypedObjectReference struct {
+	// APIGroup is the group for the resource being referenced.
+	// If APIGroup is not specified, the specified Kind must be in the core API group.
+	// For any other third-party types, APIGroup is required.
+	// +optional
+	APIGroup *string `json:"apiGroup" protobuf:"bytes,1,opt,name=apiGroup"`
+	// Kind is the type of resource being referenced
+	Kind string `json:"kind" protobuf:"bytes,2,opt,name=kind"`
+	// Name is the name of resource being referenced
+	Name string `json:"name" protobuf:"bytes,3,opt,name=name"`
+	// Namespace is the namespace of resource being referenced
+	// Note that when a namespace is specified, a ReferenceGrant object is required in the referent namespace to allow that namespace's owner to accept the reference. See the ReferenceGrant documentation for details.
+	// +optional
+	Namespace string `json:"namespace" protobuf:"bytes,4,opt,name=namespace"`
 }
 
 // PersistentVolumeClaimConditionType is a valid value of PersistentVolumeClaimCondition.Type

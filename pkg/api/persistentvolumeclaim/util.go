@@ -38,6 +38,13 @@ func DropDisabledFields(pvcSpec *core.PersistentVolumeClaimSpec) {
 	if !utilfeature.DefaultFeatureGate.Enabled(features.AnyVolumeDataSource) {
 		pvcSpec.DataSourceRef = nil
 	}
+
+	// Drop the contents of the dataSourceRef field if the CrossNamespaceVolumeDataSource
+	// feature gate is disabled and dataSourceRef.Namespace is specified.
+	if !utilfeature.DefaultFeatureGate.Enabled(features.CrossNamespaceVolumeDataSource) &&
+		pvcSpec.DataSourceRef != nil && len(pvcSpec.DataSourceRef.Namespace) != 0 {
+		pvcSpec.DataSourceRef = nil
+	}
 }
 
 // EnforceDataSourceBackwardsCompatibility drops the data source field under certain conditions
@@ -126,10 +133,26 @@ func NormalizeDataSources(pvcSpec *core.PersistentVolumeClaimSpec) {
 	}
 	if pvcSpec.DataSource != nil && pvcSpec.DataSourceRef == nil {
 		// Using the old way of setting a data source
-		pvcSpec.DataSourceRef = pvcSpec.DataSource.DeepCopy()
+		pvcSpec.DataSourceRef = &core.TypedObjectReference{
+			Kind: pvcSpec.DataSource.Kind,
+			Name: pvcSpec.DataSource.Name,
+		}
+		if pvcSpec.DataSource.APIGroup != nil {
+			apiGroup := *pvcSpec.DataSource.APIGroup
+			pvcSpec.DataSourceRef.APIGroup = &apiGroup
+		}
 	} else if pvcSpec.DataSourceRef != nil && pvcSpec.DataSource == nil {
-		// Using the new way of setting a data source
-		pvcSpec.DataSource = pvcSpec.DataSourceRef.DeepCopy()
+		if !utilfeature.DefaultFeatureGate.Enabled(features.CrossNamespaceVolumeDataSource) || len(pvcSpec.DataSourceRef.Namespace) == 0 {
+			// Using the new way of setting a data source
+			pvcSpec.DataSource = &core.TypedLocalObjectReference{
+				Kind: pvcSpec.DataSourceRef.Kind,
+				Name: pvcSpec.DataSourceRef.Name,
+			}
+			if pvcSpec.DataSourceRef.APIGroup != nil {
+				apiGroup := *pvcSpec.DataSourceRef.APIGroup
+				pvcSpec.DataSource.APIGroup = &apiGroup
+			}
+		}
 	}
 }
 

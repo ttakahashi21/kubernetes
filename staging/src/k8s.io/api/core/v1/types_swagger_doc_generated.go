@@ -1311,8 +1311,8 @@ var map_PersistentVolumeClaimSpec = map[string]string{
 	"volumeName":       "volumeName is the binding reference to the PersistentVolume backing this claim.",
 	"storageClassName": "storageClassName is the name of the StorageClass required by the claim. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#class-1",
 	"volumeMode":       "volumeMode defines what type of volume is required by the claim. Value of Filesystem is implied when not included in claim spec.",
-	"dataSource":       "dataSource field can be used to specify either: * An existing VolumeSnapshot object (snapshot.storage.k8s.io/VolumeSnapshot) * An existing PVC (PersistentVolumeClaim) If the provisioner or an external controller can support the specified data source, it will create a new volume based on the contents of the specified data source. If the AnyVolumeDataSource feature gate is enabled, this field will always have the same contents as the DataSourceRef field.",
-	"dataSourceRef":    "dataSourceRef specifies the object from which to populate the volume with data, if a non-empty volume is desired. This may be any local object from a non-empty API group (non core object) or a PersistentVolumeClaim object. When this field is specified, volume binding will only succeed if the type of the specified object matches some installed volume populator or dynamic provisioner. This field will replace the functionality of the DataSource field and as such if both fields are non-empty, they must have the same value. For backwards compatibility, both fields (DataSource and DataSourceRef) will be set to the same value automatically if one of them is empty and the other is non-empty. There are two important differences between DataSource and DataSourceRef: * While DataSource only allows two specific types of objects, DataSourceRef\n  allows any non-core object, as well as PersistentVolumeClaim objects.\n* While DataSource ignores disallowed values (dropping them), DataSourceRef\n  preserves all values, and generates an error if a disallowed value is\n  specified.\n(Beta) Using this field requires the AnyVolumeDataSource feature gate to be enabled.",
+	"dataSource":       "dataSource field can be used to specify either: * An existing VolumeSnapshot object (snapshot.storage.k8s.io/VolumeSnapshot) * An existing PVC (PersistentVolumeClaim) If the provisioner or an external controller can support the specified data source, it will create a new volume based on the contents of the specified data source. If the AnyVolumeDataSource feature gate is enabled, all the fields in this field will have the same values as those in the DataSourceRef field when namespace isn't specified in DataSourceRef. When namespace is specified in DataSourceRef, DataSource must be empty.",
+	"dataSourceRef":    "dataSourceRef specifies the object from which to populate the volume with data, if a non-empty volume is desired. This may be any object from a non-empty API group (non core object) or a PersistentVolumeClaim object. When this field is specified, volume binding will only succeed if the type of the specified object matches some installed volume populator or dynamic provisioner. This field will replace the functionality of the DataSource field and as such if both fields are non-empty, they must have the same value. For backwards compatibility, when namespace isn't specified in DataSourceRef, both fields (DataSource and DataSourceRef) will be set to the same value automatically if one of them is empty and the other is non-empty. When namespace is specified in DataSourceRef, DataSource isn't set to the same value and must be empty. There are three important differences between DataSource and DataSourceRef: * While DataSource only allows two specific types of objects, DataSourceRef\n  allows any non-core object, as well as PersistentVolumeClaim objects.\n* While DataSource ignores disallowed values (dropping them), DataSourceRef\n  preserves all values, and generates an error if a disallowed value is\n  specified.\n* While DataSource only allows local objects, DataSourceRef allows objects\n  in any namespaces.\n(Beta) Using this field requires the AnyVolumeDataSource feature gate to be enabled. (Alpha) Using the namespace field of DataSourceRef requires the CrossNamespaceVolumeDataSource feature gate to be enabled.",
 }
 
 func (PersistentVolumeClaimSpec) SwaggerDoc() map[string]string {
@@ -2425,6 +2425,17 @@ var map_TypedLocalObjectReference = map[string]string{
 
 func (TypedLocalObjectReference) SwaggerDoc() map[string]string {
 	return map_TypedLocalObjectReference
+}
+
+var map_TypedObjectReference = map[string]string{
+	"apiGroup":  "APIGroup is the group for the resource being referenced. If APIGroup is not specified, the specified Kind must be in the core API group. For any other third-party types, APIGroup is required.",
+	"kind":      "Kind is the type of resource being referenced",
+	"name":      "Name is the name of resource being referenced",
+	"namespace": "Namespace is the namespace of resource being referenced Note that when a namespace is specified, a ReferenceGrant object is required in the referent namespace to allow that namespace's owner to accept the reference. See the ReferenceGrant documentation for details.",
+}
+
+func (TypedObjectReference) SwaggerDoc() map[string]string {
+	return map_TypedObjectReference
 }
 
 var map_Volume = map[string]string{

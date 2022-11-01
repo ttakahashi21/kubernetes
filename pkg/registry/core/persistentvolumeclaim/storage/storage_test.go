@@ -221,6 +221,10 @@ func TestDefaultOnReadPvc(t *testing.T) {
 		Kind: "PersistentVolumeClaim",
 		Name: "my-pvc",
 	}
+	dataSourceRef := api.TypedObjectReference{
+		Kind: "PersistentVolumeClaim",
+		Name: "my-pvc",
+	}
 
 	var tests = map[string]struct {
 		anyEnabled    bool
@@ -278,15 +282,15 @@ func TestDefaultOnReadPvc(t *testing.T) {
 				pvc.Spec.DataSource = dataSource.DeepCopy()
 			}
 			if test.dataSourceRef {
-				pvc.Spec.DataSourceRef = dataSource.DeepCopy()
+				pvc.Spec.DataSourceRef = dataSourceRef.DeepCopy()
 			}
 			var expectDataSource *api.TypedLocalObjectReference
 			if test.want {
 				expectDataSource = &dataSource
 			}
-			var expectDataSourceRef *api.TypedLocalObjectReference
+			var expectDataSourceRef *api.TypedObjectReference
 			if test.wantRef {
-				expectDataSourceRef = &dataSource
+				expectDataSourceRef = &dataSourceRef
 			}
 
 			// Method under test

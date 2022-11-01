@@ -474,7 +474,25 @@ type PersistentVolumeClaimSpec struct {
 	//   specified.
 	// (Beta) Using this field requires the AnyVolumeDataSource feature gate to be enabled.
 	// +optional
-	DataSourceRef *TypedLocalObjectReference
+	// (Alpha) Using the namespace field of DataSourceRef requires the CrossNamespaceVolumeDataSource feature gate to be enabled.
+	// +optional
+	DataSourceRef *TypedObjectReference
+}
+
+type TypedObjectReference struct {
+	// APIGroup is the group for the resource being referenced.
+	// If APIGroup is not specified, the specified Kind must be in the core API group.
+	// For any other third-party types, APIGroup is required.
+	// +optional
+	APIGroup *string
+	// Kind is the type of resource being referenced
+	Kind string
+	// Name is the name of resource being referenced
+	Name string
+	// Namespace is the namespace of resource being referenced
+	// Note that when a namespace is specified, a ReferenceGrant object is required in the referent namespace to allow that namespace's owner to accept the reference. See the ReferenceGrant documentation for details.
+	// +optional
+	Namespace string
 }
 
 // PersistentVolumeClaimConditionType defines the condition of PV claim.

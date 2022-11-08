@@ -19895,12 +19895,12 @@ func TestCrossNamespaceSource(t *testing.T) {
 		},
 		{
 			testName:     "Feature gate enabled and xns DataSourceRef with PVC source specified",
-			expectedFail: true,
+			expectedFail: false,
 			claimSpec:    pvcSpecWithCrossNamespaceSource(&coreAPIGroup, pvcKind, goodNS, goodName, false),
 		},
 		{
 			testName:     "Feature gate enabled and xns DataSourceRef with unsupported source specified",
-			expectedFail: true,
+			expectedFail: false,
 			claimSpec:    pvcSpecWithCrossNamespaceSource(&unsupportedAPIGroup, "UnsupportedKind", goodNS, goodName, false),
 		},
 		{

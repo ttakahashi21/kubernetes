@@ -533,6 +533,7 @@ type TypedObjectReference struct {
 	// APIGroup is the group for the resource being referenced.
 	// If APIGroup is not specified, the specified Kind must be in the core API group.
 	// For any other third-party types, APIGroup is required.
+	// (Alpha) CrossNamespaceVolumeDataSource feature is restricted to VolumeSnapshots.
 	// +optional
 	APIGroup *string `json:"apiGroup" protobuf:"bytes,1,opt,name=apiGroup"`
 	// Kind is the type of resource being referenced

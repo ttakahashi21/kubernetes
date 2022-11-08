@@ -19884,58 +19884,50 @@ func TestCrossNamespaceSource(t *testing.T) {
 	goodName := "snapshot1"
 
 	testCases := []struct {
-		testName                             string
-		expectedFail                         bool
-		enableCrossNamespaceVolumeDataSource bool
-		claimSpec                            *core.PersistentVolumeClaimSpec
+		testName     string
+		expectedFail bool
+		claimSpec    *core.PersistentVolumeClaimSpec
 	}{
 		{
-			testName:                             "Feature gate enabled and valid xns DataSourceRef specified",
-			expectedFail:                         false,
-			enableCrossNamespaceVolumeDataSource: true,
-			claimSpec:                            pvcSpecWithCrossNamespaceSource(&snapAPIGroup, snapKind, goodNS, goodName, false),
+			testName:     "Feature gate enabled and valid xns DataSourceRef specified",
+			expectedFail: false,
+			claimSpec:    pvcSpecWithCrossNamespaceSource(&snapAPIGroup, snapKind, goodNS, goodName, false),
 		},
 		{
-			testName:                             "Feature gate enabled and xns DataSourceRef with PVC source specified",
-			expectedFail:                         true,
-			enableCrossNamespaceVolumeDataSource: true,
-			claimSpec:                            pvcSpecWithCrossNamespaceSource(&coreAPIGroup, pvcKind, goodNS, goodName, false),
+			testName:     "Feature gate enabled and xns DataSourceRef with PVC source specified",
+			expectedFail: true,
+			claimSpec:    pvcSpecWithCrossNamespaceSource(&coreAPIGroup, pvcKind, goodNS, goodName, false),
 		},
 		{
-			testName:                             "Feature gate enabled and xns DataSourceRef with unsupported source specified",
-			expectedFail:                         true,
-			enableCrossNamespaceVolumeDataSource: true,
-			claimSpec:                            pvcSpecWithCrossNamespaceSource(&unsupportedAPIGroup, "UnsupportedKind", goodNS, goodName, false),
+			testName:     "Feature gate enabled and xns DataSourceRef with unsupported source specified",
+			expectedFail: true,
+			claimSpec:    pvcSpecWithCrossNamespaceSource(&unsupportedAPIGroup, "UnsupportedKind", goodNS, goodName, false),
 		},
 		{
-			testName:                             "Feature gate enabled and xns DataSourceRef with nil apiGroup",
-			expectedFail:                         true,
-			enableCrossNamespaceVolumeDataSource: true,
-			claimSpec:                            pvcSpecWithCrossNamespaceSource(nil, "UnsupportedKind", goodNS, goodName, false),
+			testName:     "Feature gate enabled and xns DataSourceRef with nil apiGroup",
+			expectedFail: true,
+			claimSpec:    pvcSpecWithCrossNamespaceSource(nil, "UnsupportedKind", goodNS, goodName, false),
 		},
 		{
-			testName:                             "Feature gate enabled and xns DataSourceRef with invalid namspace specified",
-			expectedFail:                         true,
-			enableCrossNamespaceVolumeDataSource: true,
-			claimSpec:                            pvcSpecWithCrossNamespaceSource(&snapAPIGroup, snapKind, "a*b", goodName, false),
+			testName:     "Feature gate enabled and xns DataSourceRef with invalid namspace specified",
+			expectedFail: true,
+			claimSpec:    pvcSpecWithCrossNamespaceSource(&snapAPIGroup, snapKind, "a*b", goodName, false),
 		},
 		{
-			testName:                             "Feature gate enabled and xns DataSourceRef with empty namspace specified",
-			expectedFail:                         false,
-			enableCrossNamespaceVolumeDataSource: true,
-			claimSpec:                            pvcSpecWithCrossNamespaceSource(&snapAPIGroup, snapKind, "", goodName, false),
+			testName:     "Feature gate enabled and xns DataSourceRef with empty namspace specified",
+			expectedFail: false,
+			claimSpec:    pvcSpecWithCrossNamespaceSource(&snapAPIGroup, snapKind, "", goodName, false),
 		},
 		{
-			testName:                             "Feature gate enabled and both xns DataSourceRef and DataSource specified",
-			expectedFail:                         true,
-			enableCrossNamespaceVolumeDataSource: true,
-			claimSpec:                            pvcSpecWithCrossNamespaceSource(&snapAPIGroup, snapKind, goodNS, goodName, true),
+			testName:     "Feature gate enabled and both xns DataSourceRef and DataSource specified",
+			expectedFail: true,
+			claimSpec:    pvcSpecWithCrossNamespaceSource(&snapAPIGroup, snapKind, goodNS, goodName, true),
 		},
 	}
 
 	for _, tc := range testCases {
 		defer featuregatetesting.SetFeatureGateDuringTest(t, utilfeature.DefaultFeatureGate, features.AnyVolumeDataSource, true)()
-		defer featuregatetesting.SetFeatureGateDuringTest(t, utilfeature.DefaultFeatureGate, features.CrossNamespaceVolumeDataSource, tc.enableCrossNamespaceVolumeDataSource)()
+		defer featuregatetesting.SetFeatureGateDuringTest(t, utilfeature.DefaultFeatureGate, features.CrossNamespaceVolumeDataSource, true)()
 		opts := PersistentVolumeClaimSpecValidationOptions{}
 		if tc.expectedFail {
 			if errs := ValidatePersistentVolumeClaimSpec(tc.claimSpec, field.NewPath("spec"), opts); len(errs) == 0 {

@@ -183,12 +183,13 @@ func makeDataSourceRef(apiGroup, kind, name, namespace string) *core.TypedObject
 
 // TestDataSourceFilter checks to ensure the AnyVolumeDataSource feature gate and CrossNamespaceVolumeDataSource works
 func TestDataSourceFilter(t *testing.T) {
-	volumeDataSource := makeDataSource("", "PersistentVolumeClaim", "my-vol")
+	volumeDataSource := makeDataSource(coreGroup, pvcKind, "my-vol")
 	volumeDataSourceRef := makeDataSourceRef(coreGroup, pvcKind, "my-vol", "")
 	xnsVolumeDataSourceRef := makeDataSourceRef(coreGroup, pvcKind, "my-vol", "ns1")
 
 	var tests = map[string]struct {
 		spec       core.PersistentVolumeClaimSpec
+		oldSpec    core.PersistentVolumeClaimSpec
 		anyEnabled bool
 		xnsEnabled bool
 		want       *core.TypedLocalObjectReference
@@ -230,11 +231,36 @@ func TestDataSourceFilter(t *testing.T) {
 		},
 		"both any and xns enabled with xns volume ds": {
 			spec:       core.PersistentVolumeClaimSpec{DataSourceRef: xnsVolumeDataSourceRef},
+			anyEnabled: true,
 			xnsEnabled: true,
+			wantRef:    xnsVolumeDataSourceRef,
+		},
+		"both any and xns enabled with xns volume ds when xns volume exists in oldSpec": {
+			spec:       core.PersistentVolumeClaimSpec{DataSourceRef: xnsVolumeDataSourceRef},
+			oldSpec:    core.PersistentVolumeClaimSpec{DataSourceRef: xnsVolumeDataSourceRef},
+			anyEnabled: true,
+			xnsEnabled: true,
+			wantRef:    xnsVolumeDataSourceRef,
 		},
 		"only xns enabled with xns volume ds": {
 			spec:       core.PersistentVolumeClaimSpec{DataSourceRef: xnsVolumeDataSourceRef},
 			xnsEnabled: true,
+		},
+		"only any enabled with xns volume ds": {
+			spec:       core.PersistentVolumeClaimSpec{DataSourceRef: xnsVolumeDataSourceRef},
+			anyEnabled: true,
+		},
+		"only any enabled with xns volume ds when xns volume exists in oldSpec": {
+			spec:       core.PersistentVolumeClaimSpec{DataSourceRef: xnsVolumeDataSourceRef},
+			oldSpec:    core.PersistentVolumeClaimSpec{DataSourceRef: xnsVolumeDataSourceRef},
+			anyEnabled: true,
+			wantRef:    xnsVolumeDataSourceRef, // existing field isn't dropped.
+		},
+		"only any enabled with xns volume ds when volume exists in oldSpec": {
+			spec:       core.PersistentVolumeClaimSpec{DataSourceRef: xnsVolumeDataSourceRef},
+			oldSpec:    core.PersistentVolumeClaimSpec{DataSourceRef: volumeDataSourceRef},
+			anyEnabled: true,
+			wantRef:    xnsVolumeDataSourceRef, // existing field isn't dropped.
 		},
 	}
 
@@ -242,10 +268,14 @@ func TestDataSourceFilter(t *testing.T) {
 		t.Run(testName, func(t *testing.T) {
 			defer featuregatetesting.SetFeatureGateDuringTest(t, utilfeature.DefaultFeatureGate, features.AnyVolumeDataSource, test.anyEnabled)()
 			defer featuregatetesting.SetFeatureGateDuringTest(t, utilfeature.DefaultFeatureGate, features.CrossNamespaceVolumeDataSource, test.xnsEnabled)()
-			DropDisabledFields(&test.spec)
-			if test.spec.DataSource != test.want || test.spec.DataSourceRef != test.wantRef {
-				t.Errorf("expected condition was not met, test: %s, anyEnabled: %v, spec: %v, expected: %v %v",
-					testName, test.anyEnabled, test.spec, test.want, test.wantRef)
+			DropDisabledFields(&test.spec, &test.oldSpec)
+			if test.spec.DataSource != test.want {
+				t.Errorf("expected condition was not met, test: %s, anyEnabled: %v, xnsEnabled: %v, spec: %+v, expected DataSource: %+v",
+					testName, test.anyEnabled, test.xnsEnabled, test.spec, test.want)
+			}
+			if test.spec.DataSourceRef != test.wantRef {
+				t.Errorf("expected condition was not met, test: %s, anyEnabled: %v, xnsEnabled: %v, spec: %+v, expected DataSourceRef: %+v",
+					testName, test.anyEnabled, test.xnsEnabled, test.spec, test.wantRef)
 			}
 		})
 	}
@@ -340,10 +370,13 @@ func TestDataSourceRef(t *testing.T) {
 	for testName, test := range tests {
 		t.Run(testName, func(t *testing.T) {
 			NormalizeDataSources(&test.spec)
-			if !reflect.DeepEqual(test.spec.DataSource, test.want) ||
-				!reflect.DeepEqual(test.spec.DataSourceRef, test.wantRef) {
-				t.Errorf("expected condition was not met, test: %s, spec.datasource: %+v, spec.datasourceRef: %+v, want: %+v, wantRef: %+v",
-					testName, test.spec.DataSource, test.spec.DataSourceRef, test.want, test.wantRef)
+			if !reflect.DeepEqual(test.spec.DataSource, test.want) {
+				t.Errorf("expected condition was not met, test: %s, spec.datasource: %+v, want: %+v",
+					testName, test.spec.DataSource, test.want)
+			}
+			if !reflect.DeepEqual(test.spec.DataSourceRef, test.wantRef) {
+				t.Errorf("expected condition was not met, test: %s, spec.datasourceRef: %+v, wantRef: %+v",
+					testName, test.spec.DataSourceRef, test.wantRef)
 			}
 		})
 	}

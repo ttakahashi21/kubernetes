@@ -2204,7 +2204,7 @@ func ValidatePersistentVolumeClaimSpec(spec *core.PersistentVolumeClaimSpec, fld
 	if spec.DataSourceRef != nil && len(spec.DataSourceRef.Namespace) > 0 {
 		if spec.DataSource != nil {
 			allErrs = append(allErrs, field.Invalid(fldPath, fldPath.Child("dataSource"),
-				"can not specify datasource when dataSourceRef with non-empty namespace is specified"))
+				"can not specify dataSource when dataSourceRef with non-empty namespace is specified"))
 		}
 	} else if spec.DataSource != nil && spec.DataSourceRef != nil {
 		if !isDataSourceEqualDataSourceRef(spec.DataSource, spec.DataSourceRef) {
@@ -2217,25 +2217,7 @@ func ValidatePersistentVolumeClaimSpec(spec *core.PersistentVolumeClaimSpec, fld
 }
 
 func isDataSourceEqualDataSourceRef(dataSource *core.TypedLocalObjectReference, dataSourceRef *core.TypedObjectReference) bool {
-	if dataSource == nil && dataSourceRef == nil {
-		return true
-	}
-	if dataSource == nil || dataSourceRef == nil {
-		return false
-	}
-	if len(dataSourceRef.Namespace) > 0 {
-		return false
-	}
-	if dataSource.APIGroup != nil && dataSourceRef.APIGroup != nil {
-		if *dataSource.APIGroup != *dataSourceRef.APIGroup {
-			return false
-		}
-	} else {
-		if dataSource.APIGroup != nil || dataSourceRef.APIGroup != nil {
-			return false
-		}
-	}
-	return dataSource.Kind == dataSourceRef.Kind && dataSource.Name == dataSourceRef.Name
+	return reflect.DeepEqual(dataSource.APIGroup, dataSourceRef.APIGroup) && dataSource.Kind == dataSourceRef.Kind && dataSource.Name == dataSourceRef.Name
 }
 
 // ValidatePersistentVolumeClaimUpdate validates an update to a PersistentVolumeClaim

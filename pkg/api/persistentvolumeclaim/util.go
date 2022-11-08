@@ -36,7 +36,9 @@ func DropDisabledFields(pvcSpec, oldPVCSpec *core.PersistentVolumeClaimSpec) {
 	// Drop the contents of the dataSourceRef field if the AnyVolumeDataSource
 	// feature gate is disabled.
 	if !utilfeature.DefaultFeatureGate.Enabled(features.AnyVolumeDataSource) {
-		pvcSpec.DataSourceRef = nil
+		if !dataSourceRefInUse(oldPVCSpec) {
+			pvcSpec.DataSourceRef = nil
+		}
 	}
 
 	// Drop the contents of the dataSourceRef field if the CrossNamespaceVolumeDataSource

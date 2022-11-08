@@ -2129,9 +2129,6 @@ func validateDataSourceRef(dataSourceRef *core.TypedObjectReference, fldPath *fi
 	}
 
 	if len(dataSourceRef.Namespace) > 0 {
-		if dataSourceRef.Kind != "VolumeSnapshot" {
-			allErrs = append(allErrs, field.Invalid(fldPath, dataSourceRef.Kind, "expected value is VolumeSnapshot"))
-		}
 		if dataSourceRef.APIGroup == nil || *dataSourceRef.APIGroup != "snapshot.storage.k8s.io" {
 			allErrs = append(allErrs, field.Invalid(fldPath.Child("apiGroup"), dataSourceRef.APIGroup, "expected value is snapshot.storage.k8s.io"))
 		}

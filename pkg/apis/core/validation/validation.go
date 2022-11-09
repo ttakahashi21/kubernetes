@@ -2104,7 +2104,7 @@ func validateDataSource(dataSource *core.TypedLocalObjectReference, fldPath *fie
 		apiGroup = *dataSource.APIGroup
 	}
 	if len(apiGroup) == 0 && dataSource.Kind != "PersistentVolumeClaim" {
-		allErrs = append(allErrs, field.Invalid(fldPath, dataSource.Kind, ""))
+		allErrs = append(allErrs, field.Invalid(fldPath, dataSource.Kind, "must be 'PersistentVolumeClaim' when referencing the default apiGroup"))
 	}
 
 	return allErrs
@@ -2125,7 +2125,7 @@ func validateDataSourceRef(dataSourceRef *core.TypedObjectReference, fldPath *fi
 		apiGroup = *dataSourceRef.APIGroup
 	}
 	if len(apiGroup) == 0 && dataSourceRef.Kind != "PersistentVolumeClaim" {
-		allErrs = append(allErrs, field.Invalid(fldPath, dataSourceRef.Kind, ""))
+		allErrs = append(allErrs, field.Invalid(fldPath, dataSourceRef.Kind, "must be 'PersistentVolumeClaim' when referencing the default apiGroup"))
 	}
 
 	if len(dataSourceRef.Namespace) > 0 {
@@ -2198,7 +2198,7 @@ func ValidatePersistentVolumeClaimSpec(spec *core.PersistentVolumeClaimSpec, fld
 	if spec.DataSourceRef != nil && len(spec.DataSourceRef.Namespace) > 0 {
 		if spec.DataSource != nil {
 			allErrs = append(allErrs, field.Invalid(fldPath, fldPath.Child("dataSource"),
-				"can not specify dataSource when dataSourceRef with non-empty namespace is specified"))
+				"may not be specified when dataSourceRef.namespace is specified"))
 		}
 	} else if spec.DataSource != nil && spec.DataSourceRef != nil {
 		if !isDataSourceEqualDataSourceRef(spec.DataSource, spec.DataSourceRef) {

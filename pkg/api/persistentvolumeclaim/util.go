@@ -44,7 +44,7 @@ func DropDisabledFields(pvcSpec, oldPVCSpec *core.PersistentVolumeClaimSpec) {
 	// Drop the contents of the dataSourceRef field if the CrossNamespaceVolumeDataSource
 	// feature gate is disabled and dataSourceRef.Namespace is specified.
 	if !utilfeature.DefaultFeatureGate.Enabled(features.CrossNamespaceVolumeDataSource) &&
-		pvcSpec.DataSourceRef != nil && len(pvcSpec.DataSourceRef.Namespace) != 0 {
+		pvcSpec.DataSourceRef != nil && pvcSpec.DataSourceRef.Namespace != nil && len(*pvcSpec.DataSourceRef.Namespace) != 0 {
 		if !dataSourceRefInUse(oldPVCSpec) {
 			pvcSpec.DataSourceRef = nil
 		}
@@ -156,7 +156,7 @@ func NormalizeDataSources(pvcSpec *core.PersistentVolumeClaimSpec) {
 			pvcSpec.DataSourceRef.APIGroup = &apiGroup
 		}
 	} else if pvcSpec.DataSourceRef != nil && pvcSpec.DataSource == nil {
-		if len(pvcSpec.DataSourceRef.Namespace) == 0 {
+		if pvcSpec.DataSourceRef.Namespace == nil || len(*pvcSpec.DataSourceRef.Namespace) == 0 {
 			// Using the new way of setting a data source
 			pvcSpec.DataSource = &core.TypedLocalObjectReference{
 				Kind: pvcSpec.DataSourceRef.Kind,

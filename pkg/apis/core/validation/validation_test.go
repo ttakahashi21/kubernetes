@@ -19844,7 +19844,7 @@ func TestAnyDataSource(t *testing.T) {
 	testAnyDataSource(t, true, false)
 }
 
-func pvcSpecWithCrossNamespaceSource(apiGroup *string, kind, namespace, name string, isDataSourceSet bool) *core.PersistentVolumeClaimSpec {
+func pvcSpecWithCrossNamespaceSource(apiGroup *string, kind string, namespace *string, name string, isDataSourceSet bool) *core.PersistentVolumeClaimSpec {
 	scName := "csi-plugin"
 	spec := core.PersistentVolumeClaimSpec{
 		AccessModes: []core.PersistentVolumeAccessMode{
@@ -19881,6 +19881,8 @@ func TestCrossNamespaceSource(t *testing.T) {
 	snapKind := "VolumeSnapshot"
 	pvcKind := "PersistentVolumeClaim"
 	goodNS := "ns1"
+	badNS := "a*b"
+	emptyNS := ""
 	goodName := "snapshot1"
 
 	testCases := []struct {
@@ -19891,37 +19893,42 @@ func TestCrossNamespaceSource(t *testing.T) {
 		{
 			testName:     "Feature gate enabled and valid xns DataSourceRef specified",
 			expectedFail: false,
-			claimSpec:    pvcSpecWithCrossNamespaceSource(&snapAPIGroup, snapKind, goodNS, goodName, false),
+			claimSpec:    pvcSpecWithCrossNamespaceSource(&snapAPIGroup, snapKind, &goodNS, goodName, false),
 		},
 		{
 			testName:     "Feature gate enabled and xns DataSourceRef with PVC source specified",
 			expectedFail: false,
-			claimSpec:    pvcSpecWithCrossNamespaceSource(&coreAPIGroup, pvcKind, goodNS, goodName, false),
+			claimSpec:    pvcSpecWithCrossNamespaceSource(&coreAPIGroup, pvcKind, &goodNS, goodName, false),
 		},
 		{
 			testName:     "Feature gate enabled and xns DataSourceRef with unsupported source specified",
 			expectedFail: false,
-			claimSpec:    pvcSpecWithCrossNamespaceSource(&unsupportedAPIGroup, "UnsupportedKind", goodNS, goodName, false),
+			claimSpec:    pvcSpecWithCrossNamespaceSource(&unsupportedAPIGroup, "UnsupportedKind", &goodNS, goodName, false),
 		},
 		{
 			testName:     "Feature gate enabled and xns DataSourceRef with nil apiGroup",
 			expectedFail: true,
-			claimSpec:    pvcSpecWithCrossNamespaceSource(nil, "UnsupportedKind", goodNS, goodName, false),
+			claimSpec:    pvcSpecWithCrossNamespaceSource(nil, "UnsupportedKind", &goodNS, goodName, false),
 		},
 		{
 			testName:     "Feature gate enabled and xns DataSourceRef with invalid namspace specified",
 			expectedFail: true,
-			claimSpec:    pvcSpecWithCrossNamespaceSource(&snapAPIGroup, snapKind, "a*b", goodName, false),
+			claimSpec:    pvcSpecWithCrossNamespaceSource(&snapAPIGroup, snapKind, &badNS, goodName, false),
+		},
+		{
+			testName:     "Feature gate enabled and xns DataSourceRef with nil namspace specified",
+			expectedFail: false,
+			claimSpec:    pvcSpecWithCrossNamespaceSource(&snapAPIGroup, snapKind, nil, goodName, false),
 		},
 		{
 			testName:     "Feature gate enabled and xns DataSourceRef with empty namspace specified",
 			expectedFail: false,
-			claimSpec:    pvcSpecWithCrossNamespaceSource(&snapAPIGroup, snapKind, "", goodName, false),
+			claimSpec:    pvcSpecWithCrossNamespaceSource(&snapAPIGroup, snapKind, &emptyNS, goodName, false),
 		},
 		{
 			testName:     "Feature gate enabled and both xns DataSourceRef and DataSource specified",
 			expectedFail: true,
-			claimSpec:    pvcSpecWithCrossNamespaceSource(&snapAPIGroup, snapKind, goodNS, goodName, true),
+			claimSpec:    pvcSpecWithCrossNamespaceSource(&snapAPIGroup, snapKind, &goodNS, goodName, true),
 		},
 	}
 

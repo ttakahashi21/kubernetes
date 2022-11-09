@@ -542,8 +542,9 @@ type TypedObjectReference struct {
 	Name string `json:"name" protobuf:"bytes,3,opt,name=name"`
 	// Namespace is the namespace of resource being referenced
 	// Note that when a namespace is specified, a gateway.networking.k8s.io/ReferenceGrant object is required in the referent namespace to allow that namespace's owner to accept the reference. See the ReferenceGrant documentation for details.
+	// (Alpha) This field requires the CrossNamespaceVolumeDataSource feature gate to be enabled.
 	// +optional
-	Namespace string `json:"namespace" protobuf:"bytes,4,opt,name=namespace"`
+	Namespace *string `json:"namespace" protobuf:"bytes,4,opt,name=namespace"`
 }
 
 // PersistentVolumeClaimConditionType is a valid value of PersistentVolumeClaimCondition.Type

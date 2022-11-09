@@ -172,7 +172,7 @@ func makeDataSource(apiGroup, kind, name string) *core.TypedLocalObjectReference
 	}
 }
 
-func makeDataSourceRef(apiGroup, kind, name, namespace string) *core.TypedObjectReference {
+func makeDataSourceRef(apiGroup, kind, name string, namespace *string) *core.TypedObjectReference {
 	return &core.TypedObjectReference{
 		APIGroup:  &apiGroup,
 		Kind:      kind,
@@ -183,9 +183,10 @@ func makeDataSourceRef(apiGroup, kind, name, namespace string) *core.TypedObject
 
 // TestDataSourceFilter checks to ensure the AnyVolumeDataSource feature gate and CrossNamespaceVolumeDataSource works
 func TestDataSourceFilter(t *testing.T) {
+	ns := "ns1"
 	volumeDataSource := makeDataSource(coreGroup, pvcKind, "my-vol")
-	volumeDataSourceRef := makeDataSourceRef(coreGroup, pvcKind, "my-vol", "")
-	xnsVolumeDataSourceRef := makeDataSourceRef(coreGroup, pvcKind, "my-vol", "ns1")
+	volumeDataSourceRef := makeDataSourceRef(coreGroup, pvcKind, "my-vol", nil)
+	xnsVolumeDataSourceRef := makeDataSourceRef(coreGroup, pvcKind, "my-vol", &ns)
 
 	var tests = map[string]struct {
 		spec       core.PersistentVolumeClaimSpec
@@ -284,19 +285,19 @@ func TestDataSourceFilter(t *testing.T) {
 // TestDataSourceRef checks to ensure the DataSourceRef field handles backwards
 // compatibility with the DataSource field
 func TestDataSourceRef(t *testing.T) {
-
+	ns := "ns1"
 	volumeDataSource := makeDataSource(coreGroup, pvcKind, "my-vol")
-	volumeDataSourceRef := makeDataSourceRef(coreGroup, pvcKind, "my-vol", "")
-	xnsVolumeDataSourceRef := makeDataSourceRef(coreGroup, pvcKind, "my-vol", "ns1")
+	volumeDataSourceRef := makeDataSourceRef(coreGroup, pvcKind, "my-vol", nil)
+	xnsVolumeDataSourceRef := makeDataSourceRef(coreGroup, pvcKind, "my-vol", &ns)
 	snapshotDataSource := makeDataSource(snapGroup, snapKind, "my-snap")
-	snapshotDataSourceRef := makeDataSourceRef(snapGroup, snapKind, "my-snap", "")
-	xnsSnapshotDataSourceRef := makeDataSourceRef(snapGroup, snapKind, "my-snap", "ns1")
+	snapshotDataSourceRef := makeDataSourceRef(snapGroup, snapKind, "my-snap", nil)
+	xnsSnapshotDataSourceRef := makeDataSourceRef(snapGroup, snapKind, "my-snap", &ns)
 	genericDataSource := makeDataSource(genericGroup, genericKind, "my-foo")
-	genericDataSourceRef := makeDataSourceRef(genericGroup, genericKind, "my-foo", "")
-	xnsGenericDataSourceRef := makeDataSourceRef(genericGroup, genericKind, "my-foo", "ns1")
+	genericDataSourceRef := makeDataSourceRef(genericGroup, genericKind, "my-foo", nil)
+	xnsGenericDataSourceRef := makeDataSourceRef(genericGroup, genericKind, "my-foo", &ns)
 	coreDataSource := makeDataSource(coreGroup, podKind, "my-pod")
-	coreDataSourceRef := makeDataSourceRef(coreGroup, podKind, "my-pod", "")
-	xnsCoreDataSourceRef := makeDataSourceRef(coreGroup, podKind, "my-pod", "ns1")
+	coreDataSourceRef := makeDataSourceRef(coreGroup, podKind, "my-pod", nil)
+	xnsCoreDataSourceRef := makeDataSourceRef(coreGroup, podKind, "my-pod", &ns)
 
 	var tests = map[string]struct {
 		spec    core.PersistentVolumeClaimSpec

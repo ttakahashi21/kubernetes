@@ -497,8 +497,9 @@ type TypedObjectReference struct {
 	Name string
 	// Namespace is the namespace of resource being referenced
 	// Note that when a namespace is specified, a gateway.networking.k8s.io/ReferenceGrant object is required in the referent namespace to allow that namespace's owner to accept the reference. See the ReferenceGrant documentation for details.
+	// (Alpha) This field requires the CrossNamespaceVolumeDataSource feature gate to be enabled.
 	// +optional
-	Namespace string
+	Namespace *string
 }
 
 // PersistentVolumeClaimConditionType defines the condition of PV claim.

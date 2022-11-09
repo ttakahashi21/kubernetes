@@ -2128,9 +2128,9 @@ func validateDataSourceRef(dataSourceRef *core.TypedObjectReference, fldPath *fi
 		allErrs = append(allErrs, field.Invalid(fldPath, dataSourceRef.Kind, "must be 'PersistentVolumeClaim' when referencing the default apiGroup"))
 	}
 
-	if len(dataSourceRef.Namespace) > 0 {
-		for _, msg := range ValidateNameFunc(ValidateNamespaceName)(dataSourceRef.Namespace, false) {
-			allErrs = append(allErrs, field.Invalid(fldPath.Child("namespace"), dataSourceRef.Namespace, msg))
+	if dataSourceRef.Namespace != nil && len(*dataSourceRef.Namespace) > 0 {
+		for _, msg := range ValidateNameFunc(ValidateNamespaceName)(*dataSourceRef.Namespace, false) {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("namespace"), *dataSourceRef.Namespace, msg))
 		}
 	}
 
@@ -2195,7 +2195,7 @@ func ValidatePersistentVolumeClaimSpec(spec *core.PersistentVolumeClaimSpec, fld
 	if spec.DataSourceRef != nil {
 		allErrs = append(allErrs, validateDataSourceRef(spec.DataSourceRef, fldPath.Child("dataSourceRef"))...)
 	}
-	if spec.DataSourceRef != nil && len(spec.DataSourceRef.Namespace) > 0 {
+	if spec.DataSourceRef != nil && spec.DataSourceRef.Namespace != nil && len(*spec.DataSourceRef.Namespace) > 0 {
 		if spec.DataSource != nil {
 			allErrs = append(allErrs, field.Invalid(fldPath, fldPath.Child("dataSource"),
 				"may not be specified when dataSourceRef.namespace is specified"))

@@ -126,7 +126,7 @@ func makeDataSource(apiGroup, kind, name string) *api.TypedLocalObjectReference 
 
 }
 
-func makeDataSourceRef(apiGroup, kind, name, namespace string) *api.TypedObjectReference {
+func makeDataSourceRef(apiGroup, kind, name string, namespace *string) *api.TypedObjectReference {
 	return &api.TypedObjectReference{
 		APIGroup:  &apiGroup,
 		Kind:      kind,
@@ -138,18 +138,19 @@ func makeDataSourceRef(apiGroup, kind, name, namespace string) *api.TypedObjectR
 func TestPrepareForCreate(t *testing.T) {
 	ctx := genericapirequest.NewDefaultContext()
 
+	ns := "ns1"
 	volumeDataSource := makeDataSource(coreGroup, pvcKind, "my-vol")
-	volumeDataSourceRef := makeDataSourceRef(coreGroup, pvcKind, "my-vol", "")
-	xnsVolumeDataSourceRef := makeDataSourceRef(coreGroup, pvcKind, "my-vol", "ns1")
+	volumeDataSourceRef := makeDataSourceRef(coreGroup, pvcKind, "my-vol", nil)
+	xnsVolumeDataSourceRef := makeDataSourceRef(coreGroup, pvcKind, "my-vol", &ns)
 	snapshotDataSource := makeDataSource(snapGroup, snapKind, "my-snap")
-	snapshotDataSourceRef := makeDataSourceRef(snapGroup, snapKind, "my-snap", "")
-	xnsSnapshotDataSourceRef := makeDataSourceRef(snapGroup, snapKind, "my-snap", "ns1")
+	snapshotDataSourceRef := makeDataSourceRef(snapGroup, snapKind, "my-snap", nil)
+	xnsSnapshotDataSourceRef := makeDataSourceRef(snapGroup, snapKind, "my-snap", &ns)
 	genericDataSource := makeDataSource(genericGroup, genericKind, "my-foo")
-	genericDataSourceRef := makeDataSourceRef(genericGroup, genericKind, "my-foo", "")
-	xnsGenericDataSourceRef := makeDataSourceRef(genericGroup, genericKind, "my-foo", "ns1")
+	genericDataSourceRef := makeDataSourceRef(genericGroup, genericKind, "my-foo", nil)
+	xnsGenericDataSourceRef := makeDataSourceRef(genericGroup, genericKind, "my-foo", &ns)
 	coreDataSource := makeDataSource(coreGroup, podKind, "my-pod")
-	coreDataSourceRef := makeDataSourceRef(coreGroup, podKind, "my-pod", "")
-	xnsCoreDataSourceRef := makeDataSourceRef(coreGroup, podKind, "my-pod", "ns1")
+	coreDataSourceRef := makeDataSourceRef(coreGroup, podKind, "my-pod", nil)
+	xnsCoreDataSourceRef := makeDataSourceRef(coreGroup, podKind, "my-pod", &ns)
 
 	var tests = map[string]struct {
 		anyEnabled    bool
